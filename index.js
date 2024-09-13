@@ -244,3 +244,14 @@ foodApp.post("/orders", validateToken, async (req, res)=>{
     }
 
 })
+
+foodApp.get("/all-orders", async (req, res)=>{
+    try {
+        const allOrder = await Order.find();
+
+        return res.status(200).json({message: "Successful", count: allOrder.length, allOrder});
+
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+})
