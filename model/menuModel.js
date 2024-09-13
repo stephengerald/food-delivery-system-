@@ -5,7 +5,7 @@ const menuSchema = new mongoose.Schema({
     description: { type: String, require: true },
     price: { type: Number, require: true },
     availability: { type: Boolean, default: true },
-    restaurantId: [{ type: mongoose.Schema.Types.ObjectId, ref: "Restaurants" }]
+    restaurantId: [{ type: mongoose.Schema.Types.ObjectId, ref: "Restaurants"}]
 }, {
     timestamps: true
 })

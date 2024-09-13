@@ -42,7 +42,7 @@ const validateLogin = async (req, res, next) =>{
     }
 
     if(!password){
-        errors.push("Please add your password")
+        errors.push("Incorrect email or password")
     }
 
     if(errors.length > 0){

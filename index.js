@@ -104,7 +104,7 @@ foodApp.post("/login", validateLogin, async (req, res)=>{
         // Generating Tokens
         // Access Token
 
-        const accessToken = jwt.sign({user}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "1m"});
+        const accessToken = jwt.sign({user}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "5m"});
 
         const refreshToken = jwt.sign({user}, `${process.env.REFRESH_TOKEN}`, {expiresIn: "5m"})
 
