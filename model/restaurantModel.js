@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 
 const restaurantSchema = new mongoose.Schema({
-    username: { type: String, required: true },
-    location: { type: String, required: true },
-    email: { type: String, required: true },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', require: true },
+    name: { type: String, require: true },
+    location: { type: String, require: true },
+    email: { type: String, require: true },
     menu: [{ type: mongoose.Schema.Types.ObjectId, ref: "Menu" }]
   }, {
     timestamps: true

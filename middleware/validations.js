@@ -41,7 +41,7 @@ const validateLogin = async (req, res, next) =>{
         errors.push("Email format is incorrect")
     }
 
-    if(!password){
+    if(password.length < 8){
         errors.push("Incorrect email or password")
     }
 
