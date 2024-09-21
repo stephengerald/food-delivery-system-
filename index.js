@@ -3,15 +3,16 @@ const dotenv = require("dotenv").config();
 const connectToDatabase = require("./dataBase");
 const { validateRegistration, validateLogin } = require("./middleware/validations");
 const validateToken = require("./middleware/validateAuth")
-const Users = require("./model/userModel")
-const Restaurants = require("./model/restaurantModel")
-const Order = require("./model/orderModel")
-const MenuItem = require("./model/menuItemModel");
-const Menu = require("./model/menuModel")
+const Users = require("./models/userModel")
+const Restaurants = require("./models/restaurantModel")
+const Order = require("./models/orderModel")
+const MenuItem = require("./models/menuItemModel");
+const Menu = require("./models/menuModel")
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendUserEmail = require("./sendEmail");
+const userRouter = require("./routes/userRoute")
 
 const foodApp = express();
 
@@ -23,37 +24,37 @@ const PORT = process.env.PORT || 9000;
 
 connectToDatabase();
 
-foodApp.listen(PORT, ()=>{
+foodApp.listen(PORT, () => {
     console.log(`Server is running on ${PORT}`);
 });
 
 
-foodApp.get("/", (req, res)=>{
+foodApp.get("/", (req, res) => {
     try {
         return res.status(200).json({ message: "Welcome to FoodCorner!" });
     } catch (error) {
-        return res.status(500).json({message: error.message});
+        return res.status(500).json({ message: error.message });
     }
 });
 
 
 //user registration endpoint
 
-foodApp.post("/register", validateRegistration, async (req, res)=>{
+foodApp.post("/register", validateRegistration, async (req, res) => {
     try {
         const { username, email, password, role } = req.body;
 
         const exitingUser = await Users.findOne({ email });
 
-        if(exitingUser){
-            return res.status(400).json({message: "User account already exist!"});
+        if (exitingUser) {
+            return res.status(400).json({ message: "User account already exist!" });
         }
 
         // Hash password
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = new Users({ username, email, password: hashedPassword, role});
+        const newUser = new Users({ username, email, password: hashedPassword, role });
 
         await newUser.save();
 
@@ -61,7 +62,7 @@ foodApp.post("/register", validateRegistration, async (req, res)=>{
 
         await sendUserEmail(email)
 
-        return res.status(200).json({message: "Successful", user: newUser});
+        return res.status(200).json({ message: "Successful", user: newUser });
     } catch (error) {
         return res.status(500).json({ message: "An error occurred during registration" });
     }
@@ -69,14 +70,14 @@ foodApp.post("/register", validateRegistration, async (req, res)=>{
 
 // find user by Id
 
-foodApp.get("/user/:id", validateToken, async (req, res)=>{
+foodApp.get("/user/:id", validateToken, async (req, res) => {
     try {
         const { id } = req.params;
 
         // Validate ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ message: 'Invalid ObjectId' });
-    }
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: 'Invalid ObjectId' });
+        }
 
         const user = await Users.findById(id);
 
@@ -91,11 +92,11 @@ foodApp.get("/user/:id", validateToken, async (req, res)=>{
 
 // Get all users
 
-foodApp.get("/all-users", async (req, res)=>{
+foodApp.get("/all-users", async (req, res) => {
     try {
         const allUsers = await Users.find();
 
-        return res.status(200).json({message: "Successful", count: allUsers.length, allUsers});
+        return res.status(200).json({ message: "Successful", count: allUsers.length, allUsers });
 
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -103,29 +104,30 @@ foodApp.get("/all-users", async (req, res)=>{
 })
 
 // login endpoint
-
-foodApp.post("/login", validateLogin, async (req, res)=>{
+foodApp.use(userRouter)
+/*
+foodApp.post("/login", validateLogin, async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const user = await Users.findOne({email});
+        const user = await Users.findOne({ email });
 
-        if(!user){
-            return res.status(404).json({message: "User account not found"})
+        if (!user) {
+            return res.status(404).json({ message: "User account not found" })
         }
 
         const isMatched = await bcrypt.compare(password, user.password);
 
-        if(!isMatched){
-            return res.status(400).json({message: "Incorrect password or email!"})
+        if (!isMatched) {
+            return res.status(400).json({ message: "Incorrect password or email!" })
         }
 
         // Generating Tokens
         // Access Token
 
-        const accessToken = jwt.sign({user}, `${process.env.ACCESS_TOKEN}`, {expiresIn: "5m"});
+        const accessToken = jwt.sign({ user }, `${process.env.ACCESS_TOKEN}`, { expiresIn: "5m" });
 
-        const refreshToken = jwt.sign({user}, `${process.env.REFRESH_TOKEN}`, {expiresIn: "5m"})
+        const refreshToken = jwt.sign({ user }, `${process.env.REFRESH_TOKEN}`, { expiresIn: "5m" })
 
         await sendUserEmail(email);
 
@@ -134,30 +136,31 @@ foodApp.post("/login", validateLogin, async (req, res)=>{
             accessToken,
             user
         })
-        
+
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
 });
+*/
 
 // Update User
-foodApp.put("/update-user/:id", validateToken, async (req, res)=>{
+foodApp.put("/update-user/:id", validateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { username, email, password, role } = req.body;
 
         const exitingUser = await Users.findById(id);
-        if(!exitingUser){
-            return res.status(400).json({message: "User not found!"})
+        if (!exitingUser) {
+            return res.status(400).json({ message: "User not found!" })
         }
 
         hashedPassword = await bcrypt.hash(password, 12)
         const updatedUser = await Users.findByIdAndUpdate(id, { username, email, password: hashedPassword, role }, { new: true });
 
-        if(password.length < 8){
-            return res.status(400).json({message: "Password should be more than eight characters!"})
+        if (password.length < 8) {
+            return res.status(400).json({ message: "Password should be more than eight characters!" })
         }
-        return res.status(200).json({message: "Successful", user: updatedUser})
+        return res.status(200).json({ message: "Successful", user: updatedUser })
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -165,7 +168,7 @@ foodApp.put("/update-user/:id", validateToken, async (req, res)=>{
 
 //delete users
 
-foodApp.delete("/delete-users/:id", validateToken, async (req, res)=>{
+foodApp.delete("/delete-users/:id", validateToken, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -179,14 +182,14 @@ foodApp.delete("/delete-users/:id", validateToken, async (req, res)=>{
                 password,
                 role
             },
-            {new: true});
+            { new: true });
 
         const availableUsers = await Users.find();
 
         return res.status(200).json({
             message: "Successful",
             count: availableUsers.length,
-            users: {deleteUser, availableUsers}
+            users: { deleteUser, availableUsers }
         })
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -195,9 +198,9 @@ foodApp.delete("/delete-users/:id", validateToken, async (req, res)=>{
 
 // Protected Routes
 
-foodApp.post("/auth", validateToken, (req, res)=>{
+foodApp.post("/auth", validateToken, (req, res) => {
     try {
-        return res.status(200).json({message: "Successful", user: req.user})
+        return res.status(200).json({ message: "Successful", user: req.user })
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -207,18 +210,18 @@ foodApp.post("/auth", validateToken, (req, res)=>{
 // Restaurant Endpoints
 // create a new restaurant
 
-foodApp.post("/create-restaurants", validateToken, async (req, res)=>{
+foodApp.post("/create-restaurants", validateToken, async (req, res) => {
     try {
         const { user_id, name, location, email, menu } = req.body
 
         const existingRestaurant = await Restaurants.findOne({ email, name });
 
-        if(existingRestaurant){
-            return res.status(400).json({message: "Restaurant name already exist!"});
+        if (existingRestaurant) {
+            return res.status(400).json({ message: "Restaurant name already exist!" });
         }
 
         // Link the menu to the restaurant
-        const menuItems = await Menu.find({ _id: { $in: menu} });
+        const menuItems = await Menu.find({ _id: { $in: menu } });
 
         if (!menuItems.length) {
             return res.status(400).json({ message: "No valid menu items found" });
@@ -231,14 +234,16 @@ foodApp.post("/create-restaurants", validateToken, async (req, res)=>{
         await newRestaurant.save();
 
         // Populate the menu details
-        const populatedRestaurant = await Restaurants.findById(newRestaurant._id).populate({ path: 'menu',
-            select: '_id name description price' });
+        const populatedRestaurant = await Restaurants.findById(newRestaurant._id).populate({
+            path: 'menu',
+            select: '_id name description price'
+        });
 
         // send Restaurant Email
 
         await sendUserEmail(email, name)
 
-        return res.status(200).json({message: "Successful", restaurant: populatedRestaurant});
+        return res.status(200).json({ message: "Successful", restaurant: populatedRestaurant });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -247,14 +252,14 @@ foodApp.post("/create-restaurants", validateToken, async (req, res)=>{
 
 // Get all restaurants
 
-foodApp.get("/all-restaurants", async (req, res)=>{
+foodApp.get("/all-restaurants", async (req, res) => {
     try {
         const restaurants = await Restaurants.find().populate({
             path: 'menu',
             select: '_id name description price'
-          });
+        });
 
-        return res.status(200).json({message: "Successful", count: restaurants.length, restaurants});
+        return res.status(200).json({ message: "Successful", count: restaurants.length, restaurants });
 
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -263,7 +268,7 @@ foodApp.get("/all-restaurants", async (req, res)=>{
 
 // Update a restaurant
 
-foodApp.patch("/edit-restaurant/:id", validateToken, async (req, res)=>{
+foodApp.patch("/edit-restaurant/:id", validateToken, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -291,7 +296,7 @@ foodApp.patch("/edit-restaurant/:id", validateToken, async (req, res)=>{
             return res.status(404).json({ message: "Restaurant not found" });
         }
 
-        return res.status(200).json({message: "Successful", restaurant: updateRestaurant});
+        return res.status(200).json({ message: "Successful", restaurant: updateRestaurant });
 
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -301,7 +306,7 @@ foodApp.patch("/edit-restaurant/:id", validateToken, async (req, res)=>{
 
 //Delete a Restaurant
 
-foodApp.delete("/delete-restaurants/:id", async (req, res)=>{
+foodApp.delete("/delete-restaurants/:id", async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -330,7 +335,7 @@ foodApp.delete("/delete-restaurants/:id", async (req, res)=>{
 //menu Endpoints
 //New Menu 
 
-foodApp.post("/create-menu", validateToken, async (req, res)=>{
+foodApp.post("/create-menu", validateToken, async (req, res) => {
 
     try {
         const { name, description, price, availability, restaurant } = req.body;
@@ -342,11 +347,11 @@ foodApp.post("/create-menu", validateToken, async (req, res)=>{
 
         const existingmenu = await Menu.findOne({ name, description });
 
-        if(existingmenu){
-            return res.status(400).json({message: "Menu name already exist!"});
+        if (existingmenu) {
+            return res.status(400).json({ message: "Menu name already exist!" });
         }
 
-        const newMenu =  new Menu({ name, description, price, availability, restaurant });
+        const newMenu = new Menu({ name, description, price, availability, restaurant });
 
         await newMenu.save();
 
@@ -362,7 +367,7 @@ foodApp.post("/create-menu", validateToken, async (req, res)=>{
 
         await restaurantDoc.save();
 
-        return res.status(200).json({message: "Successful", menuList: newMenu});
+        return res.status(200).json({ message: "Successful", menuList: newMenu });
 
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -389,11 +394,11 @@ foodApp.get("/menu/:id", async (req, res) => {
 
 
 //Get all menu items
-foodApp.get("/all-menu", async (req, res)=>{
+foodApp.get("/all-menu", async (req, res) => {
     try {
         const menu = await Menu.find().populate("restaurant", "_id name");
 
-        return res.status(200).json({message: "Successful", count: menu.length, menu})
+        return res.status(200).json({ message: "Successful", count: menu.length, menu })
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -432,7 +437,7 @@ foodApp.delete("/delete-menu/:id", async (req, res) => {
 
         const availableMenu = await Menu.find();
 
-        return res.status(200).json({ message: "Menu deleted successfully", deleted_Menu: deletedMenu, count: availableMenu.length, Available_Menu: availableMenu});
+        return res.status(200).json({ message: "Menu deleted successfully", deleted_Menu: deletedMenu, count: availableMenu.length, Available_Menu: availableMenu });
 
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -442,9 +447,15 @@ foodApp.delete("/delete-menu/:id", async (req, res) => {
 
 //Order endpoints
 //Place an order
-foodApp.post("/create-order", async(req, res)=>{
+foodApp.post("/create-order", async (req, res) => {
     try {
         const { userId, restaurantId, orderedItems } = req.body;
+
+        const exitingUser = await Users.findOne({ userId });
+
+        if (!exitingUser) {
+            return res.status(400).json({ message: "You do not have an account yet, Please register!" });
+        }
 
         // ... (other validations)
 
@@ -475,29 +486,30 @@ foodApp.post("/create-order", async(req, res)=>{
 
 });
 
-foodApp.get("/order/:id", async (req, res)=>{
+foodApp.get("/order/:id", async (req, res) => {
     try {
         const { id } = req.params;
-    
+
         // Find the order by ID
         const order = await Order.findById(id);
-    
+
         if (!order) {
-          return res.status(404).json({
-            message: "Order not found" });
+            return res.status(404).json({
+                message: "Order not found"
+            });
         }
-    
-        return res.status(200).json({requestedOrder: order});
-      } catch (error) {
+
+        return res.status(200).json({ requestedOrder: order });
+    } catch (error) {
         return res.status(500).json({ message: error.message });
-      }
+    }
 })
 
-foodApp.get("/all-orders", async (req, res)=>{
+foodApp.get("/all-orders", async (req, res) => {
     try {
         const allOrder = await Order.find();
 
-        return res.status(200).json({message: "Successful", count: allOrder.length, allOrder});
+        return res.status(200).json({ message: "Successful", count: allOrder.length, allOrder });
 
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -507,26 +519,25 @@ foodApp.get("/all-orders", async (req, res)=>{
 //Delete an order by ID
 foodApp.delete("/delete-order/:id", async (req, res) => {
     try {
-      const { id } = req.params;
-  
-      // Find and delete the order by ID
-      const deletedOrder = await Order.findByIdAndDelete(id);
-  
-      if (!deletedOrder) {
-        return res.status(404).json({ message: 'Order not found' });
-      }
-      const availableOrder = await Order.find();
-  
-      return res.status(200).json({
-        message: "Order deleted successfully", RemainingOrder: availableOrder.length, availableOrder });
+        const { id } = req.params;
+
+        // Find and delete the order by ID
+        const deletedOrder = await Order.findByIdAndDelete(id);
+
+        if (!deletedOrder) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        const availableOrder = await Order.find();
+
+        return res.status(200).json({
+            message: "Order deleted successfully", RemainingOrder: availableOrder.length, availableOrder
+        });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
-  });
-
-
+});
 
 foodApp.use((req, res) => {
-    return res.status(404).json({message: "This endpoint does not exist yet"});
+    return res.status(404).json({ message: "This endpoint does not exist yet" });
 });
 

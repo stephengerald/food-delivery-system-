@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer");
-const User = require("./model/restaurantModel")
+const User = require("./models/restaurantModel")
 
 //info@sterux.com
 // zoho, sendgrid, gsuite, microsoft360
