@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/create-restaurants", validateToken, createRestaurant);
 
 //get all restaurant
-router.get("/all-restaurants", allRestaurant);
+router.get("/all-restaurants", validateToken, allRestaurant);
 
 // Update a restaurant
 router.patch("/edit-restaurant/:id", validateToken, updatedRestaurant);

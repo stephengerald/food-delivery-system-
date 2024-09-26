@@ -9,16 +9,16 @@ const router = express.Router();
 router.post("/create-menu", validateToken, createMenu);
 
 //Display a single Menu
-router.get("/menu/:id", singleMenu);
+router.get("/menu/:id", validateToken, singleMenu);
 
 //display all menu
-router.get("/all-menu", allMenu);
+router.get("/all-menu", validateToken, allMenu);
 
 //update menu
-router.put("/update-menu/:id", updateMenu);
+router.put("/update-menu/:id", validateToken, updateMenu);
 
 //delete menu
-router.delete("/delete-menu/:id", deleteMenu);
+router.delete("/delete-menu/:id", validateToken, deleteMenu);
 
 
 

@@ -17,7 +17,7 @@ router.post("/register", validateRegistration, registerFn);
 router.get("/user/:id", validateToken, singleUser);
 
 // Get all users
-router.get("/all-users", allUser);
+router.get("/all-users", validateToken, allUser);
 
 //Update user
 router.put("/update-user/:id", validateToken, updateUser);
