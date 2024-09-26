@@ -9,6 +9,7 @@ const orderSchema = new mongoose.Schema({
         price: { type: Number, require: true }
     }],
     totalCost: { type: Number, require: true },
+    deliveryPersonnel: { type: mongoose.Schema.Types.ObjectId, ref: "DeliveryPersonnel", require: true },
     status: { type: String, enum: ["pending", "preparing", "out_for_delivery", "delivered"], default: "pending" }
 }, {
     timestamps: true
