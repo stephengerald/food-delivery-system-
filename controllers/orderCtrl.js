@@ -110,7 +110,7 @@ const singleOrder = async (req, res) => {
         const { id } = req.params;
 
         // Find the order by ID
-        const order = await Order.findById(id).populate('restaurant').populate('deliveryPersonnel');
+        const order = await Order.findById(id).populate('restaurantId').populate('deliveryPersonnel');
 
         if (!order) {
             return res.status(404).json({
@@ -126,7 +126,7 @@ const singleOrder = async (req, res) => {
 
 const allOrders = async (req, res) => {
     try {
-        const allOrder = await Order.find().populate('restaurant').populate('deliveryPersonnel');
+        const allOrder = await Order.find().populate('restaurantId').populate('deliveryPersonnel');
 
         return res.status(200).json({ message: "Successful", count: allOrder.length, allOrder });
 

@@ -11,13 +11,13 @@ const loginFn = async (req, res) => {
         const user = await Users.findOne({ email });
 
         if (!user) {
-            return res.status(404).json({ message: "User account not found" })
+            return res.status(404).json({message: "User account not found"});
         }
 
         const isMatched = await bcrypt.compare(password, user.password);
 
         if (!isMatched) {
-            return res.status(400).json({ message: "Incorrect password or email!" })
+            return res.status(400).json({ message: "Access Denied!" })
         }
 
         // Generating Tokens
