@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const nodemailer = require("nodemailer");
 const pdfkit = require("pdfkit");
+const fs = require('fs');
 
 const issueCertificate = async (req, res)=>{
     try {
