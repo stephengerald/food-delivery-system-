@@ -14,7 +14,7 @@ const sendUserEmail =  async (userEmail, username)=>{
                 user: `${process.env.Email}`,
                 pass: `${process.env.Email_PASSWORD}`
             }
-        })
+        });
 
         // Details to send
 

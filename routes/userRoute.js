@@ -1,5 +1,5 @@
 const express = require("express");
-const { loginFn, registerFn, singleUser, allUser, updateUser, welcome, deletedUser } = require("../controllers/userCtrl");
+const { loginFn, registerFn, singleUser, allUser, updateUser, welcome, deletedUser, issueCertificate } = require("../controllers/userCtrl");
 const { validateLogin, validateRegistration } = require("../middleware/validations");
 const validateToken = require("../middleware/validateAuth");
 
@@ -24,6 +24,9 @@ router.put("/update-user/:id", validateToken, updateUser);
 
 //delete user
 router.delete("/delete-users/:id", validateToken, deletedUser);
+
+//send certificate
+router.post("/send-user-certificate/:id", validateToken, issueCertificate)
 
 
 
