@@ -20,7 +20,7 @@ const issueCertificate = async (req, res)=>{
     
 
     // Retrieve user's name
-    const userName = await Users.findOne(username);
+    const userName = await Users.findOne({username});
 
     // Generate certificate
     const pdfDoc = new pdfkit();
