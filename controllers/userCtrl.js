@@ -8,55 +8,63 @@ const nodemailer = require("nodemailer");
 const pdfkit = require("pdfkit");
 const fs = require('fs');
 
-const issueCertificate = async (req, res)=>{
+const issueCertificate = async (req, res) => {
     try {
         const { id } = req.params;
         const { email, username } = req.body;
-
-    // Check if the user exists in your database (replace with your database logic)
-    const user = await Users.findById(id);
-    if(!user){
-        return res.status(400).json({message: "Invalid user!"})
-    }
     
-
-    // Retrieve user's name
-    const userName = await Users.findOne({username});
-
-    // Generate certificate
-    const pdfDoc = new pdfkit();
-    pdfDoc.pipe(fs.createWriteStream('certificate.pdf'));
-    pdfDoc.text('Certificate of Completion', { align: 'center', size: 20 });
-    pdfDoc.text(`Name: ${userName}`, { align: 'center', size: 16 });
-    pdfDoc.end();
-
-    const mailTransporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            user: `${process.env.Email}`,
-            pass: `${process.env.Email_PASSWORD}`
+        // Check if the user exists in your database (replace with your database logic)
+        const user = await Users.findById(id);
+        if (!user) {
+          return res.status(400).json({ message: "Invalid user!" });
         }
-    });
-
-    // Details to send
-
-    const detailsToSend = {
-        from: process.env.Email,
-        to: email,
-        subject: "Your Certificate",
-        attachments: [
+    
+        // Generate certificate content
+        const certificateText = `Name: ${username}`;
+    
+        // Generate the PDF
+        const pdfDoc = new pdfkit();
+        const pdfPath = 'C:\\Users\\OKPALA STEPHEN\\OneDrive\\Desktop\\food_delivery_system\\certificate.pdf';
+        pdfDoc.pipe(fs.createWriteStream('certificate.pdf'));
+        pdfDoc.text('Certificate of Completion', { align: 'center', size: 20 });
+        pdfDoc.text(certificateText, { align: 'center', size: 16 });
+        pdfDoc.end();
+    
+        const mailTransporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        });
+    
+        const detailsToSend = {
+          from: process.env.EMAIL,
+          to: email,
+          subject: "Your Certificate",
+          attachments: [
             {
-                filename: "certificate.pdf",
-                content: fs.readFileSync('certificate.pdf')
-            }
-        ]
-    };
-    const result = await mailTransporter.sendMail(detailsToSend)
-    return res.status(200).json({message: "Certificate sent successfully" })
-    } catch (error) {
-        return res.status(400).json({message: error.message});
-    }
-}
+              filename: "certificate.pdf",
+              content: fs.readFileSync('certificate.pdf'),
+            },
+          ],
+        };
+    
+        const result = await mailTransporter.sendMail(detailsToSend);
+    
+        // Clean up (optional): Delete the temporary file after sending
+        try {
+          await fs.promises.unlink('certificate.pdf'); // Use fs.promises for async deletion
+        } catch (error) {
+          console.error('Error deleting certificate.pdf:', error);
+          // Log the error but don't prevent the response
+        }
+    
+        return res.status(200).json({ message: "Certificate sent successfully" });
+      } catch (error) {
+         return res.status(400).json({ message: error.message });
+        }
+  };
 
 const loginFn = async (req, res) => {
     try {

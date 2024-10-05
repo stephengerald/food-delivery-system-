@@ -26,7 +26,7 @@ router.put("/update-user/:id", validateToken, updateUser);
 router.delete("/delete-users/:id", validateToken, deletedUser);
 
 //send certificate
-router.post("/send-user-certificate/:id", validateToken, issueCertificate)
+router.post("/issue-certificate/:id", validateToken, issueCertificate)
 
 
 
