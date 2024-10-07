@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendUserEmail = require("../sendEmail");
 const mongoose = require("mongoose");
+const { pagination } = require("../routes/utilities");
 
 const createRestaurant = async (req, res) => {
     try {
@@ -78,12 +79,13 @@ const singleRestaurant = async (req, res) => {
 
 const allRestaurant = async (req, res) => {
     try {
-        const restaurants = await Restaurants.find().populate({
+        const { page, limit, skip } = pagination(req)
+        const restaurants = await Restaurants.find().sort({createdAt: -1}).populate({
             path: 'menu',
             select: '_id name description price'
         });
 
-        return res.status(200).json({ message: "Successful", count: restaurants.length, restaurants });
+        return res.status(200).json({ message: "Successful", count: restaurants.length, page, restaurants });
 
     } catch (error) {
         return res.status(500).json({ message: error.message });
