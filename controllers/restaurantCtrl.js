@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendUserEmail = require("../sendEmail");
 const mongoose = require("mongoose");
-const { pagination } = require("../routes/utilities");
+const { pagination } = require("../utilities");
 
 const createRestaurant = async (req, res) => {
     try {
