@@ -1,12 +1,14 @@
 const express = require("express");
 const validateToken = require("../middleware/validateAuth");
-const { createOrder, singleOrder, allOrders, deleteOrder, updateOrder } = require("../controllers/orderCtrl");
+const { createOrder, singleOrder, allOrders, deleteOrder, updateOrder, verifyPayment } = require("../controllers/orderCtrl");
 
 
 const router = express.Router();
 
 // create a order
 router.post("/create-order", validateToken, createOrder);
+
+router.get("/verify-payment", validateToken, verifyPayment);
 
 //display an order
 router.get("/order/:id", validateToken, singleOrder);
